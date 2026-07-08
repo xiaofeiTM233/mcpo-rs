@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/xiaofeiTM233/mcp2api/blob/main/config.schema.json",
+  "title": "MCPO Config Schema",
+  "description": "Configuration schema for MCPO (MCP-to-OpenAPI Proxy) - follows Claude Desktop MCP config format",
+  "type": "object",
+  "required": ["mcpServers"],
+  "properties": {
+    "mcpServers": {
+      "type": "object",
+      "description": "Map of MCP server names to their configurations",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/StdioServerConfig"
+          },
+          {
+            "$ref": "#/$defs/SseServerConfig"
+          },
+          {
+            "$ref": "#/$defs/StreamableHttpServerConfig"
+          }
+        ]
+      },
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "StdioServerConfig": {
+      "type": "object",
+      "description": "Configuration for a stdio-based MCP server",
+      "required": ["command"],
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Command to launch the MCP server (e.g., 'npx', 'uvx', 'python')"
+        },
+        "args": {
+          "type": "array",
+          "description": "Arguments to pass to the command",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "description": "Environment variables for the server process",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string",
+          "const": "stdio",
+          "description": "Server type"
+        },
+        "disabledTools": {
+          "type": "array",
+          "description": "List of tool names to disable",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SseServerConfig": {
+      "type": "object",
+      "description": "Configuration for an SSE-based MCP server",
+      "required": ["url"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "sse",
+          "description": "Server type"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the SSE endpoint (e.g., 'http://127.0.0.1:8001/sse')"
+        },
+        "headers": {
+          "type": "object",
+          "description": "HTTP headers to send with requests",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "disabledTools": {
+          "type": "array",
+          "description": "List of tool names to disable",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "StreamableHttpServerConfig": {
+      "type": "object",
+      "description": "Configuration for a Streamable HTTP-based MCP server",
+      "required": ["url"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "streamable-http",
+          "description": "Server type"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the MCP endpoint (e.g., 'http://127.0.0.1:8002/mcp')"
+        },
+        "headers": {
+          "type": "object",
+          "description": "HTTP headers to send with requests",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "disabledTools": {
+          "type": "array",
+          "description": "List of tool names to disable",
+          "items": {
+            "type": "string"
+          }
+        },
+        "oauth": {
+          "type": "object",
+          "description": "OAuth 2.1 authentication configuration",
+          "required": ["server_url"],
+          "properties": {
+            "server_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "OAuth server base URL"
+            },
+            "storage_type": {
+              "type": "string",
+              "enum": ["file", "memory"],
+              "default": "file",
+              "description": "Token storage type"
+            },
+            "callback_port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535,
+              "default": 3030,
+              "description": "Local port for OAuth callback"
+            },
+            "use_loopback": {
+              "type": "boolean",
+              "default": true,
+              "description": "Auto-open browser for auth"
+            }
+          }
+        }
+      }
+    }
+  }
+}
